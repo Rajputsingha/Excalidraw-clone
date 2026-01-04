@@ -1,0 +1,14 @@
+{
+    "extends":"@repo/typescript-config/base.json",
+    "compilerOptions": {
+    "module": "NodeNext",         // ✅ ESM for Node
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+
+  },
+  "include": ["src"]
+     
+}

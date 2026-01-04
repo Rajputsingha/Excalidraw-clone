@@ -1,0 +1,27 @@
+{
+  "name": "@repo/backend-comman",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    "./config": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@repo/typescript-config": "workspace:*"
+    
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDpendencies": {
+    "@types/node": "^22.15.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3"
+  }
+}
