@@ -41,7 +41,7 @@ wss.on("connection", (ws, request) => {
   ws.on("message", async (data) => {
     const msg = JSON.parse(data.toString());
 
-    // JOIN ROOM
+   
     if (msg.type === "join_room") {
       const user = users.find((u) => u.ws === ws);
       if (user) user.rooms.push(String(msg.roomId));
@@ -55,7 +55,7 @@ wss.on("connection", (ws, request) => {
       }
     }
 
-    // CHART MESSAGE
+   
     if (msg.type === "chart") {
       const roomId = msg.roomId;
       const message = msg.message;

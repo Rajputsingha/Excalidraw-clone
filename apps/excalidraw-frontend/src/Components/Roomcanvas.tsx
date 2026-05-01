@@ -7,7 +7,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
 
   useEffect(() => {
     const token =
- "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2YyODkzOS1iMDgxLTQ4Y2ItOTJlZS1mMmVkODgzOGY4MzMiLCJpYXQiOjE3NjQ0NzQ2MzF9.dWfIQnk_6uvut1K8uhkZGB4Vik7h1LH9nmpCoFdd0Cg";;
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NTRhNTcwYS02NjdjLTRjYjYtOTgxOC1lNDJkNzJkMTIyN2IiLCJpYXQiOjE3NzYyNjAwOTN9.mZIECCMJTkM9RkN3EmbRoaDCvFIN9LsReQ47EeMaVAY";
 
     const ws = new WebSocket(`${WS_URL}?token=${token}`);
 
@@ -22,8 +22,25 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     };
 
     ws.onerror = (err) => console.error("WebSocket error:", err);
+    ws.onclose = (event) => {
+      console.error("WebSocket closed:", {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+    };
 
-    return () => ws.close(); // <-- cleanup
+    return () => {
+      // In React dev (StrictMode), effects can mount/unmount quickly.
+      // Closing while CONNECTING can produce noisy console errors.
+      ws.onopen = null;
+      ws.onerror = null;
+      ws.onclose = null;
+
+      if (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN) {
+        ws.close(1000, "cleanup");
+      }
+    };
   }, [roomId]); // <-- FIXED
 
   if (!socket) {
@@ -36,3 +53,5 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     </div>
   );
 }
+
+// this logic write to connect the websocket server 

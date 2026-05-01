@@ -17,9 +17,9 @@ type Shape ={
 
 }
 export async function initDraw(canvas :HTMLCanvasElement,roomId:string, socket:WebSocket){
-    const ctx=canvas.getContext("2d");
+    const ctx=canvas.getContext("2d"); // get the canvas context
 
-    const  existingShapes: Shape[]=await getExistingShape(roomId);
+    const  existingShapes: Shape[]=await getExistingShape(roomId);  // hit the backend  respondse for get the all  existing shape 
 
     if(!ctx){
         return
@@ -31,8 +31,8 @@ export async function initDraw(canvas :HTMLCanvasElement,roomId:string, socket:W
             const parseData=JSON.parse(message.message);
             // Handle both {shape: {...}} and direct shape object
             const shape = parseData.shape || parseData;
-            existingShapes.push(shape);
-            clearCanvas(existingShapes,canvas,ctx);
+            existingShapes.push(shape); // we push the golabl array
+            clearCanvas(existingShapes,canvas,ctx); // clearcanvas is render function it will rerender all the sape  in screen
 
         }
     }
@@ -50,25 +50,41 @@ clearCanvas(existingShapes,canvas,ctx);
         startX=e.clientX - rect.left;
         startY=e.clientY - rect.top;
      })
-     canvas.addEventListener("mouseup",(e)=>{
-        if(!clicked) return;
+     canvas.addEventListener("mouseup",(e)=>{ // when mouse up mouse uppar kar ke chor diya 
+        if(!clicked) return;  // clicked false 
         clicked=false;
-        const rect = canvas.getBoundingClientRect();
-        const endX = e.clientX - rect.left;
-        const endY = e.clientY - rect.top;
-        const width=endX - startX;
-        const height=endY - startY;
-        const shape:Shape=({
-            type:"rect",
-            x:startX,
-            y:startY,
-            height,
-            width
-        })
-        existingShapes.push(shape);
+            const width = e.clientX - startX;
+        const height = e.clientY - startY;
+       // @ts-expect-error: Known issue with legacy API definitions
+        const selectedTool = window.selectedTool;
+        let shape: Shape | null = null;
+        if (selectedTool === "rect") {
+
+            shape = {
+                type: "rect",
+                x: startX,
+                y: startY,
+                height,
+                width
+            }
+        } else if (selectedTool === "circle") {
+            const radius = Math.max(width, height) / 2;
+            shape = {
+                type: "circle",
+                radius: radius,
+                centerX: startX + radius,
+                centerY: startY + radius,
+            }
+        }
+
+        if (!shape) {
+            return;
+        }
+
+        existingShapes.push(shape); // we push a new shape of existing array
 
 
-        socket.send(JSON.stringify({
+        socket.send(JSON.stringify({ // let everuone know ki mene te shape bana li hai app v bana lo
             type:"chart",
             message:  JSON.stringify(shape),
             roomId
@@ -77,18 +93,28 @@ clearCanvas(existingShapes,canvas,ctx);
   
      })
 
-     canvas.addEventListener("mousemove",(e)=>{
-        if(clicked){
-            const rect = canvas.getBoundingClientRect();
-            const currentX = e.clientX - rect.left;
-            const currentY = e.clientY - rect.top;
-            const width=currentX - startX;
-            const height=currentY - startY;
-            clearCanvas(existingShapes,canvas,ctx);
+     canvas.addEventListener("mousemove",(e)=>{ // mousemove the mouseup
+        if(clicked){ // if clicked
+        const width = e.clientX - startX;
+        const height = e.clientY - startY;
+            clearCanvas(existingShapes,canvas,ctx); // we render all  the existing shape by clear canvas
             ctx.strokeStyle="rgba(255,255,255)";
-            ctx.strokeRect(startX,startY,width,height);
+            ctx.strokeRect(startX,startY,width,height);// render the rectangle wehere you start whre we end 
+              // @ts-expect-error: Known issue with legacy API definitions
+             const selectedTool = window.selectedTool;
+            if (selectedTool === "rect") {
+                ctx.strokeRect(startX, startY, width, height);   
+            } else if (selectedTool === "circle") {
+                const radius = Math.max(width, height) / 2;
+                const centerX = startX + radius;
+                const centerY = startY + radius;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.closePath();                
+            }
         }
-     })
+        })
 
 }
 
